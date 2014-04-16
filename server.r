@@ -141,6 +141,24 @@ shinyServer(function(input, output, session){ # pass in a session argument
   })
   
   
+  # Data A build final fully imputed and filtered dataset
+  getNewNum <- reactive({
+    if(input$get == 0){
+      return(0)
+    } else {
+      isolate({
+      return(as.numeric(input$numNew))
+      })
+    }
+        
+  })
+  
+  
+  
+  
+  
+  
+  
   #  converts a matrix of number of days to dates.  Uses (inf)Date as start point
   daysToDate <- function(daysData,dateList){
     for (c in 1:ncol(daysData)){
@@ -283,7 +301,11 @@ shinyServer(function(input, output, session){ # pass in a session argument
   ## quarterly plot use A+B+D
   output$quarterlyp<-renderPlot({
     # add B back in
-        
+    
+    if(input$get == 0) return(NULL)
+    
+    isolate({
+    
     oldData=formsoutDate()
     data=getData()
     newdata=getDataWNew()
@@ -386,6 +408,7 @@ shinyServer(function(input, output, session){ # pass in a session argument
     plot(c(1:ncol(qtotaln)),as.numeric(qtotaln),ylab="Cost (Thousands)",xlab=" ",col="red",pch=16,xaxt='n')
     points(c(1:ncol(qtotalo)),as.numeric(qtotalo),pch=16,col="black")
     axis(1,at=c(1:ncol(qtotaln)),labels=names(qtotaln),las=2,cex.axis=0.8)
+    })
     
   })
   
@@ -394,6 +417,9 @@ shinyServer(function(input, output, session){ # pass in a session argument
   ## quarterly plot use A+B+D
   output$quarterlyt<-renderTable({
     
+    if(input$get == 0) return(NULL)
+    
+    isolate({
     # add B back in
     
     oldData=formsoutDate()
@@ -500,6 +526,7 @@ shinyServer(function(input, output, session){ # pass in a session argument
     
     qtotal
 
+  })
     
   })
   
@@ -552,7 +579,7 @@ shinyServer(function(input, output, session){ # pass in a session argument
   #create a set of new inf dates
   createNewDate <-reactive({
     
-    numNew<-as.numeric(input$numNew)
+    numNew<-getNewNum()
     
     if (numNew==0) return (Date)
     
@@ -594,7 +621,7 @@ shinyServer(function(input, output, session){ # pass in a session argument
   ### create a set of new form data
   createNewDay<-reactive({
     
-    numNew<-as.numeric(input$numNew)
+    numNew<-getNewNum()
     
    if (numNew==0) return (NULL)
     

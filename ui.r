@@ -14,14 +14,18 @@ ui_call[[1]]<-call("h4",paste("Choose the enrollment range"))
 ui_call[[2]]<-call("dateRangeInput","inputId"="enrollRange",label=paste("Enrollment date range for new patients"),
                    start=as.Date(paste0(format(Sys.Date(),"%Y"),"-01-01")),end=as.Date(paste0(format(Sys.Date(),"%Y"),"-12-31")))
 ui_call[[3]]<-call("h4",paste("Choose the number of added patients"))
-ui_call[[4]]<-call("selectInput","inputId"="numNew",label="Number of new patients to be randomized",choices=c(0,100,1000,5000,10000,50000), selected=0)
+ui_call[[4]]<-call("textInput","inputId"="numNew",label="Input number of patients",value=1000)
+
+ui_call[[5]]<-call("br")
+ui_call[[6]]<-call("actionButton","get", "Add Patients")
 
 
-for (i in 1:4){
+
+for (i in 1:6){
   ui_call[[i]]<-call("conditionalPanel",condition="input.conditionedPanels==2",ui_call[[i]])
 }
 
-uicol=5
+uicol=7
 
 for(i in 1:ncol(Forms)){
   ui_call[[uicol]]<-call("h4",paste(gsub(pattern="form_",replacement="",x=names(Forms)[i]),"Form"))
@@ -41,7 +45,7 @@ for(i in 1:ncol(Forms)){
 }
 
 end<-length(ui_call)
-for (i in 5:end){
+for (i in 7:end){
   ui_call[[i]]<-call("conditionalPanel",condition="input.conditionedPanels==1",ui_call[[i]])
 }
 
