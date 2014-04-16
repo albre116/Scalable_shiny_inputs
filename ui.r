@@ -7,10 +7,24 @@ library(shiny)
 load("Forms.RData") # load the dataframe
 
 
+
 ui_call<-list()
-uicol=1
+
+ui_call[[1]]<-call("h4",paste("Choose the enrollment range"))
+ui_call[[2]]<-call("dateRangeInput","inputId"="enrollRange",label=paste("Enrollment date range for new patients"),
+                   start=as.Date(paste0(format(Sys.Date(),"%Y"),"-01-01")),end=as.Date(paste0(format(Sys.Date(),"%Y"),"-12-31")))
+ui_call[[3]]<-call("h4",paste("Choose the number of added patients"))
+ui_call[[4]]<-call("selectInput","inputId"="numNew",label="Number of new patients to be randomized",choices=c(0,100,1000,5000,10000,50000), selected=0)
+
+
+for (i in 1:4){
+  ui_call[[i]]<-call("conditionalPanel",condition="input.conditionedPanels==2",ui_call[[i]])
+}
+
+uicol=5
+
 for(i in 1:ncol(Forms)){
-  ui_call[[uicol]]<-h4(paste(gsub(pattern="form_",replacement="",x=names(Forms)[i]),"Form"))
+  ui_call[[uicol]]<-call("h4",paste(gsub(pattern="form_",replacement="",x=names(Forms)[i]),"Form"))
   uicol=uicol+1
   
   ui_call[[uicol]]<-call("dateRangeInput","inputId"=paste("dateRange_",i,sep=""),label=paste("Infusion Date range for the", gsub(pattern="form_",replacement="",x=names(Forms)[i]),"Form"),
@@ -21,25 +35,40 @@ for(i in 1:ncol(Forms)){
                          min=0,max=max(Forms[which(Forms[,i]>0),i],na.rm=TRUE),value=c(0,max(Forms[which(Forms[,i]>0),i],na.rm=TRUE)),ticks=FALSE)
   uicol=uicol+1
   
-  ui_call[[uicol]]<-br()
+  ui_call[[uicol]]<-call("br")
   uicol=uicol+1
   
 }
 
+end<-length(ui_call)
+for (i in 5:end){
+  ui_call[[i]]<-call("conditionalPanel",condition="input.conditionedPanels==1",ui_call[[i]])
+}
 
 
 shinyUI(pageWithSidebar( 
   
-  headerPanel("Forms Reimbursement"), 
+  headerPanel("Forms Reimbursement"),
   do.call(sidebarPanel,ui_call),
+       
   
   mainPanel(
-    tabsetPanel(id ="theTabs",
-                tabPanel("Summary", verbatimTextOutput("s"),
-                         value = "summary"),
-                tabPanel("Overall Expected Cost", plotOutput("expected"),value = "plot"),
-                tabPanel("Quarterly Cost", plotOutput("quarterly"),value = "plot"),
-                tabPanel("Length to Claim", plotOutput("claimdays"),value = "plot")
+    tabsetPanel(
+                
+                tabPanel("Length to Claim", plotOutput("claimdays"),value = 1),
+                
+                #tabPanel("Summary", verbatimTextOutput("s"),value = "summary"),
+                #tabPanel("OLD Individual Expected Cost", plotOutput("expected"),value = "plot"),
+                tabPanel("Density of Expected Cost", plotOutput("density"),value = 1),
+                tabPanel("Cumulative Expected Cost", plotOutput("cumulative"),value = 1),
+                
+                tabPanel("Infusion Date Distribution", plotOutput("datedist"),value = 2),
+                
+                tabPanel("Quarterly Cost Plot", plotOutput("quarterlyp"),value = 2),
+                tabPanel("Quarterly Cost Table", tableOutput("quarterlyt"),value = 2),
+                
+               id = "conditionedPanels"
+                
                 
     )
   )
